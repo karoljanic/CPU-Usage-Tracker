@@ -1,35 +1,38 @@
-# Project Structure
+# PROJECT STRUCTURE
 SRC_DIR := ./src
 INC_DIR := ./inc
 APP_DIR := ./app
 TESTS_DIR := ./tests
 
-# Files
-SRC := $(wildcard $(SRC_DIR)/*.c)
-ASRC := $(SRC) $(wildcard $(APP_DIR)/*.c)
-AOBJ := $(ASRC:%.c=%.o)
-OBJ := $(AOBJ)
-DEPS := $(OBJ:%.o=%.d)
+# PROJECT FILES
+MODE := app
+SRC := $(wildcard $(SRC_DIR)/*.c) # list of all the C source files in the SRC_DIR directory
 
-# Libraries
+ifeq ($(MODE), test) # SRC + list of all the C source files in TESTS_DIR directory
+	APP_SRC := $(SRC) $(wildcard $(TESTS_DIR)/*.c)
+	TARGET := $(TESTS_DIR)/test.out
+else # SRC + list of all the C source files in APP_DIR directory
+	APP_SRC := $(SRC) $(wildcard $(APP_DIR)/*.c)
+	TARGET := main.out
+endif
+
+OBJ := $(APP_SRC:%.c=%.o) # replace .c with .o for each element in APP_SRC
+DEPS := $(OBJ:%.o=%.d) # replace .o with .d for each element in OBJ
+
+# LIBRARIES
 LIBS := pthread
 
-# Exec
-EXEC := main.out
+# COMPILATION
+CC ?= gcc # default compiler
+C_FLAGS := -Wall -Wextra -Werror
+DEP_FLAGS := -MMD -MP # automatically generate .d dependenciees
 
-# Default Compiler = GCC
-CC ?= gcc 
+INCS_INC := $(foreach i, $(INC_DIR), -I$i) # foreach var in INC_DIR expand with -I$var
+LIBS_INC := $(foreach l, $(LIBS), -l$l)
 
-DEP_FLAGS := -MMD -MP
-
-H_INC := $(foreach d, $(INC_DIR), -I$d)
-L_INC := $(foreach l, $(LIBS), -l$l)
-
-# Compiler Flags
-ifeq ($(CC),clang++)
-	C_FLAGS += -Weverything -Wno-vla -Wno-disabled-macro-expansion -std=c99
-else
-	C_FLAGS += -Wall -Wextra -Werror -std=c99
+# If CC is set to clang, add -Weverything flag
+ifeq ($(CC), clang)
+	C_FLAGS += -Weverything -Wno-vla -Wno-disabled-macro-expansion
 endif
 
 # Set -O flag if O= argument is present, default=-O3
@@ -46,28 +49,25 @@ else
 	GGDB :=
 endif
 
-# make V=1 --> verbose, otherwise silence
-ifeq ("$(origin V)", "command line")
-	Q :=
-else
-	Q ?= @
-endif
-
 C_FLAGS += $(OPT) $(GGDB) $(DEP_FLAGS)
 
-all: $(EXEC)
+# TARGETS
+print-% : ; $(info $* is a $(flavor $*) variable set to [$($*)]) @true
 
-$(EXEC): $(AOBJ)
-	$(Q)$(CC) $(C_FLAGS) $(H_INC) $(AOBJ) -o $@ $(L_INC)
+all: $(TARGET)
 
-%.o:%.cpp %.d
-	$(Q)$(CC) $(C_FLAGS) $(H_INC) -c $< -o $@
+$(TARGET): $(OBJ)
+	$(CC) $(C_FLAGS) $(INCS_INC) $(OBJ) -o $@ $(LIBS_INC)
+
+%.o:%.c %.d
+	$(CC) $(C_FLAGS) $(INCS_INC) -c $< -o $@
+
 
 clean:
-	$(Q)$(RM) $(EXEC)
-	$(Q)$(RM) $(OBJ)
-	$(Q)$(RM) $(DEPS)
+	rm -rf $(TARGET)
+	rm -rf $(OBJ)
+	rm -rf $(DEPS)
+	rm -rf $(DEPS)
 
 $(DEPS):
-
 include $(wildcard $(DEPS))
