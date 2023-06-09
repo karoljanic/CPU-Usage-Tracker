@@ -8,16 +8,17 @@ TESTS_DIR := ./tests
 MODE := app
 SRC := $(wildcard $(SRC_DIR)/*.c) # list of all the C source files in the SRC_DIR directory
 
-ifeq ($(MODE), test) # SRC + list of all the C source files in TESTS_DIR directory
-	APP_SRC := $(SRC) $(wildcard $(TESTS_DIR)/*.c)
-	TARGET := $(TESTS_DIR)/test.out
-else # SRC + list of all the C source files in APP_DIR directory
-	APP_SRC := $(SRC) $(wildcard $(APP_DIR)/*.c)
-	TARGET := main.out
-endif
+APP_SRC := $(SRC) $(wildcard $(APP_DIR)/*.c)
+APP_TARGET := main.out
 
-OBJ := $(APP_SRC:%.c=%.o) # replace .c with .o for each element in APP_SRC
-DEPS := $(OBJ:%.o=%.d) # replace .o with .d for each element in OBJ
+TEST_SRC := $(SRC) $(wildcard $(TESTS_DIR)/*.c)
+TEST_TARGET := $(TESTS_DIR)/test.out
+
+APP_OBJ := $(APP_SRC:%.c=%.o) # replace .c with .o for each element in APP_SRC
+TEST_OBJ := $(TEST_SRC:%.c=%.o) # replace .c with .o for each element in APP_SRC
+
+APP_DEPS := $(APP_OBJ:%.o=%.d) # replace .o with .d for each element in OBJ
+TEST_DEPS := $(TEST_OBJ:%.o=%.d) # replace .o with .d for each element in OBJ
 
 # LIBRARIES
 LIBS := pthread
@@ -54,20 +55,29 @@ C_FLAGS += $(OPT) $(GGDB) $(DEP_FLAGS)
 # TARGETS
 print-% : ; $(info $* is a $(flavor $*) variable set to [$($*)]) @true
 
-all: $(TARGET)
+all: $(APP_TARGET)
 
-$(TARGET): $(OBJ)
-	$(CC) $(C_FLAGS) $(INCS_INC) $(OBJ) -o $@ $(LIBS_INC)
+test: $(TEST_TARGET)
+
+$(APP_TARGET): $(APP_OBJ)
+	$(CC) $(C_FLAGS) $(INCS_INC) $(APP_OBJ) -o $@ $(LIBS_INC)
+
+$(TEST_TARGET): $(TEST_OBJ)
+	$(CC) $(C_FLAGS) $(INCS_INC) $(TEST_OBJ) -o $@ $(LIBS_INC)
 
 %.o:%.c %.d
 	$(CC) $(C_FLAGS) $(INCS_INC) -c $< -o $@
 
-
 clean:
-	rm -rf $(TARGET)
-	rm -rf $(OBJ)
-	rm -rf $(DEPS)
-	rm -rf $(DEPS)
+	rm -rf $(APP_TARGET)
+	rm -rf $(TEST_TARGET)
+	rm -rf $(APP_OBJ)
+	rm -rf $(TEST_OBJ)
+	rm -rf $(APP_DEPS)
+	rm -rf $(TEST_DEPS)
 
-$(DEPS):
-include $(wildcard $(DEPS))
+$(APP_DEPS):
+include $(wildcard $(APP_DEPS))
+
+$(TEST_DEPS):
+include $(wildcard $(TEST_DEPS))
