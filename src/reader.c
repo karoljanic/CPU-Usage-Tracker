@@ -6,16 +6,13 @@
 #include <stdbool.h>    // bool
 #include "string.h"     // strok, strstr
 
-static const char* STATISTICS_FILE_PATH = "/proc/stat";
-
 typedef struct Reader {
-  size_t read_interval;
   FILE* file;
 } Reader;
 
 
-Reader* reader_new(register const size_t read_interval) {
-  if(read_interval == 0)
+Reader* reader_new(char* file_path) {
+  if(file_path == NULL)
     return NULL;
 
   Reader* reader = malloc(sizeof(*reader));
@@ -23,7 +20,7 @@ Reader* reader_new(register const size_t read_interval) {
   if(reader == NULL)
     return NULL;
 
-  FILE* file = fopen(STATISTICS_FILE_PATH, "r");
+  FILE* file = fopen(file_path, "r");
   if(file == NULL) {
     free(reader);
     return NULL;
@@ -31,7 +28,6 @@ Reader* reader_new(register const size_t read_interval) {
 
   *reader =(Reader){
     .file = file,
-    .read_interval = read_interval
   };
 
   return reader;

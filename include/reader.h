@@ -6,23 +6,24 @@
 #include "result_code.h"
 
 /**
- * @brief reader structure
+ * @brief Reader structure
 */
 typedef struct Reader Reader;
 
 /**
  * @brief Create reader
  * 
- * @param read_interval - time between successive file readings
+ * @param file_path - path to file to read
  * 
- * @return pointer to created Reader
+ * @return pointer to created reader
 */
-Reader* reader_new(size_t read_interval);
+Reader* reader_new(char* file_path);
 
 /**
  * @brief Read statistics
  * 
  * @param reader - pointer to reader
+ * @param statistics - poiter to statistics structure to save reader result
  * @return operation result
 */
 ResultCode reader_read_latest_statistics(Reader* reader, ProcStatistics* statistics);
