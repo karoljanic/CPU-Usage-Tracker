@@ -40,16 +40,18 @@ ResultCode reader_read_latest_statistics(Reader* const reader, ProcStatistics* s
   if(statistics == NULL)
     return NULL_TARGET_ERROR;
 
-  bool data_read_successfully;
+  bool data_read_successfully = false;
   size_t buffer_size = 1024;
+  size_t chars_read;
 
   char* buffer = malloc(buffer_size);
   if(buffer == NULL)
     return ALLOCATION_ERROR;
 
-  do {
-    fread(buffer, sizeof(char), buffer_size, reader->file);
-    data_read_successfully = ferror(reader->file) || !feof(reader->file);
+  while(!data_read_successfully) {
+    fseek(reader->file, 0, SEEK_SET);
+    chars_read = fread(buffer, sizeof(char), buffer_size, reader->file);
+    data_read_successfully = !ferror(reader->file) && feof(reader->file);
 
     if(!data_read_successfully) {
       free(buffer);
@@ -58,19 +60,20 @@ ResultCode reader_read_latest_statistics(Reader* const reader, ProcStatistics* s
       buffer = malloc(buffer_size);
 
       if(buffer == NULL) {
-          return ALLOCATION_ERROR;
+        return ALLOCATION_ERROR;
       }
     }
   }
-  while(!data_read_successfully);
+  buffer[chars_read] = '\0';
 
   uint8_t cpus_number = 0;
   char* file_content = buffer;
   while((file_content = strstr(file_content, "cpu")) != NULL) {
     cpus_number++;
-    file_content += 3;
+    file_content++;
   }
-
+  cpus_number--; // one "cpu" is total
+  
   statistics->cpus_number = cpus_number;
   statistics->cpus = malloc(sizeof(CpuStatistics) * cpus_number);
 
