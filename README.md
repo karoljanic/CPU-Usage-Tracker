@@ -1,4 +1,4 @@
-# CPU-Usage-Tracker
+## CPU-Usage-Tracker
 
 Multithreaded program for calculating CPU usage based on /proc/stat.
 It presents producer-consumer problem.
