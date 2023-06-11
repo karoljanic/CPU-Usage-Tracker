@@ -12,15 +12,18 @@ typedef struct Reader {
 
 
 Reader* reader_new(char* file_path) {
+  Reader* reader;
+  FILE* file;
+
   if(file_path == NULL)
     return NULL;
 
-  Reader* reader = malloc(sizeof(*reader));
+  reader = malloc(sizeof(*reader));
 
   if(reader == NULL)
     return NULL;
 
-  FILE* file = fopen(file_path, "r");
+  file = fopen(file_path, "r");
   if(file == NULL) {
     free(reader);
     return NULL;
@@ -34,17 +37,23 @@ Reader* reader_new(char* file_path) {
 }
 
 ResultCode reader_read_latest_statistics(Reader* const reader, ProcStatistics* statistics) {
+  bool data_read_successfully = false;
+  size_t buffer_size = 1024;
+  size_t chars_read = 0;
+  char* buffer;
+  uint8_t cpus_number = 0;
+  size_t cpu_num = 0;
+  char* file_content;
+  char* line;
+  int trash;
+
   if(reader == NULL)
     return NULL_TARGET_ERROR;
 
   if(statistics == NULL)
     return NULL_TARGET_ERROR;
 
-  bool data_read_successfully = false;
-  size_t buffer_size = 1024;
-  size_t chars_read;
-
-  char* buffer = malloc(buffer_size);
+  buffer = malloc(buffer_size);
   if(buffer == NULL)
     return ALLOCATION_ERROR;
 
@@ -66,8 +75,7 @@ ResultCode reader_read_latest_statistics(Reader* const reader, ProcStatistics* s
   }
   buffer[chars_read] = '\0';
 
-  uint8_t cpus_number = 0;
-  char* file_content = buffer;
+  file_content = buffer;
   while((file_content = strstr(file_content, "cpu")) != NULL) {
     cpus_number++;
     file_content++;
@@ -82,9 +90,7 @@ ResultCode reader_read_latest_statistics(Reader* const reader, ProcStatistics* s
     return ALLOCATION_ERROR;
   }
 
-  char* line = strtok(buffer, "\n");
-  size_t cpu_num = 0;
-  int trash;
+  line = strtok(buffer, "\n");
   while (line != NULL){
       if(strstr(line, "cpu") != NULL) {
           if(cpu_num == 0) { // first "cpu" occurrence is statistic for total

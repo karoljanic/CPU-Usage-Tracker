@@ -9,17 +9,17 @@ typedef struct Printer {
 static void visualise_cpu_usage(float percentage, const char* marker);
 
 void visualise_cpu_usage(float percentage, const char* marker) {
-    int progress = (int)(percentage / 10.0);
+    int progress = (int)(percentage / 10.0f);
     
     printf("[");
 
     for(int i = 0; i < progress; i++)
-        printf(marker);
+        printf("%s", marker);
 
     for(int i = progress; i < 10; i++)
         printf(" ");
 
-    printf("] %0.2f%%", percentage);
+    printf("] %0.2f%%", (double)percentage);
 }
 
 Printer* printer_new(char* progress_marker) {

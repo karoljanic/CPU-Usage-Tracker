@@ -5,17 +5,18 @@
 #include "../include/analyzer.h"
 
 typedef struct Analyzer {
-  uint64_t proc_total_prev;
-  uint64_t proc_idle_prev;
   uint64_t* cpus_total_prev;
   uint64_t* cpus_idle_prev;
+  uint64_t proc_total_prev;
+  uint64_t proc_idle_prev;
   bool prev_initialized;
+  char padding[7];
 } Analyzer;
 
 static float single_analyse(CpuStatistics* statistics, uint64_t* total_prev, uint64_t* idle_prev);
 
 
-Analyzer* analyzer_new() {
+Analyzer* analyzer_new(void) {
     Analyzer* analyzer = malloc(sizeof(*analyzer));
     if(analyzer == NULL)
         return NULL;
@@ -33,19 +34,9 @@ static float single_analyse(CpuStatistics* statistics, uint64_t* total_prev, uin
   uint64_t total = idle + non_idle - *total_prev;
   uint64_t idled = idle - *idle_prev;
 
-  /*
-  printf("\n");
-  printf("total_prev: %ld\n", *total_prev);
-  printf("idle_prev: %ld\n", *idle_prev);
-  printf("idle: %ld\n", idle);
-  printf("non_idle: %ld\n", non_idle);
-  printf("total: %ld\n", total);
-  printf("idled: %ld\n", idled);
-  */
-
-  float percentage = 0.0;
-  if(total != 0.0)
-    percentage = (float)(total - idled) / (float)total * 100.0;
+  float percentage = 0.0f;
+  if(total != 0)
+    percentage = (float)(total - idled) / (float)total * 100.0f;
 
   *total_prev = idle + non_idle;
   *idle_prev = idle;
@@ -54,6 +45,9 @@ static float single_analyse(CpuStatistics* statistics, uint64_t* total_prev, uin
 }
 
 ResultCode analyzer_analyse_statistics(Analyzer* analyzer, ProcStatistics* row_statistics, AnalysedProcStatistics* analysed_statistics) {
+  uint64_t idle;
+  uint64_t non_idle;
+
   if(analyzer == NULL)
     return NULL_TARGET_ERROR;
     
@@ -75,8 +69,8 @@ ResultCode analyzer_analyse_statistics(Analyzer* analyzer, ProcStatistics* row_s
       return ALLOCATION_ERROR;
     }
     
-    uint64_t idle = row_statistics->total.idle + row_statistics->total.iowait;
-    uint64_t non_idle = row_statistics->total.user + row_statistics->total.nice + row_statistics->total.system + row_statistics->total.irq + row_statistics->total.sortirq + row_statistics->total.steal;
+    idle = row_statistics->total.idle + row_statistics->total.iowait;
+    non_idle = row_statistics->total.user + row_statistics->total.nice + row_statistics->total.system + row_statistics->total.irq + row_statistics->total.sortirq + row_statistics->total.steal;
     
     analyzer->proc_total_prev = idle + non_idle;
     analyzer->proc_idle_prev = idle;

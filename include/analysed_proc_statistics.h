@@ -4,9 +4,10 @@
 #include <stdint.h> // uint8_t
 
 typedef struct AnalysedProcStatistics {
-    uint8_t cpus_number;
-    float total;
-    float* cpus;
+  float* cpus;
+  float total;
+  uint8_t cpus_number;
+  char padding[3];
 } AnalysedProcStatistics;
 
 #endif // ANALYSED_PROC_STATISTICS_H

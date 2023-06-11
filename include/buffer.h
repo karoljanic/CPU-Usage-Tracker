@@ -1,5 +1,5 @@
-#ifndef BUFFER_C
-#define BUFFER_C
+#ifndef BUFFER_H
+#define BUFFER_H
 
 #include <stdbool.h>    // bool
 #include <stdint.h>     // uint8_t
@@ -68,4 +68,4 @@ ResultCode buffer_pop(Buffer* buffer, void* element, uint8_t max_pop_time);
 */
 void buffer_delete(Buffer* buffer);
 
-#endif // BUFFER_C
+#endif // BUFFER_H

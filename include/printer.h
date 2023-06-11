@@ -28,7 +28,7 @@ void printer_print_proc_usage(Printer* printer, AnalysedProcStatistics* statisti
 /**
  * @brief Destroy printer
  * 
- * @param reader - pointer to printer to delete
+ * @param printer - pointer to printer to delete
 */
 void printer_delete(Printer* printer);
 

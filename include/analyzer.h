@@ -15,7 +15,7 @@ typedef struct Analyzer Analyzer;
  *
  * @return pointer to created analyzer
 */
-Analyzer* analyzer_new();
+Analyzer* analyzer_new(void);
 
 /**
  * @brief Analyze statistics

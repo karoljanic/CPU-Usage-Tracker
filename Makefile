@@ -33,7 +33,7 @@ LIBS_INC := $(foreach l, $(LIBS), -l$l)
 
 # If CC is set to clang, add -Weverything flag
 ifeq ($(CC), clang)
-	C_FLAGS += -Weverything -Wno-vla -Wno-disabled-macro-expansion
+	C_FLAGS += -Weverything -Wno-vla -Wno-disabled-macro-expansion -Wno-deprecated-pragma
 endif
 
 # Set -O flag if O= argument is present, default=-O3
